@@ -21,6 +21,7 @@ The first subject is BGP.
 
 | Path | Purpose |
 |---|---|
+| `src/protocol_in_code/bgp/` | BGP source files that the site explains module by module |
 | `modules/` | Core course modules |
 | `notes/` | Short design notes, draft ideas, and future topics |
 | `COURSE_MAP.md` | Canonical map of tracks and modules |
@@ -35,6 +36,17 @@ Examples:
 - What state changes when a message arrives?
 - What condition decides the branch?
 - What output is produced?
+
+## Source of Truth Split
+
+- GitHub repository: the code itself
+- pathvector.dev: the explanations, module framing, and reading guidance
+
+The BGP modules currently map like this:
+
+- Module 01 -> `src/protocol_in_code/bgp/session.py`
+- Module 02 -> `src/protocol_in_code/bgp/update.py`
+- Module 03 -> `src/protocol_in_code/bgp/best_path.py`
 
 ## Separation Rule
 

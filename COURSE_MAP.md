@@ -14,14 +14,17 @@ Both are independent tracks.
 1. `modules/bgp/module-01-neighbor-inputs.md`
    - Question: What does a BGP neighbor need in order to form?
    - Lens: function inputs + state machine
+   - Source: `src/protocol_in_code/bgp/session.py`
 
 2. `modules/bgp/module-02-update-state-transitions.md`
    - Question: How does UPDATE change routing state?
    - Lens: mutation functions + state transitions
+   - Source: `src/protocol_in_code/bgp/update.py`
 
 3. `modules/bgp/module-03-best-path-if-statements.md`
    - Question: Why does one path become best?
    - Lens: ordered condition branches
+   - Source: `src/protocol_in_code/bgp/best_path.py`
 
 ## Future Tracks
 
