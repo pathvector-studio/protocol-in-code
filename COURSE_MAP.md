@@ -26,6 +26,11 @@ Both are independent tracks.
    - Lens: ordered condition branches
    - Source: `src/protocol_in_code/bgp/best_path.py`
 
+4. `modules/bgp/module-04-origin-validation.md`
+   - Question: How is origin authorization decided after best path selection?
+   - Lens: separate validation function + tri-state outcome
+   - Source: `src/protocol_in_code/bgp/validation.py`
+
 ## Future Tracks
 
 ### DNS

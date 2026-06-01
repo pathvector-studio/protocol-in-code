@@ -3,8 +3,10 @@
 from .best_path import PathCandidate, select_best_path
 from .session import BGPCapability, BGPSessionConfig, SessionState, establish_neighbor
 from .update import BGPUpdate, PathAttributes, RoutingTable, apply_update_message
+from .validation import BGPRoute, VRP, ValidationState, validate_origin, vrp_covers_route
 
 __all__ = [
+    "BGPRoute",
     "BGPCapability",
     "BGPSessionConfig",
     "BGPUpdate",
@@ -12,7 +14,11 @@ __all__ = [
     "PathCandidate",
     "RoutingTable",
     "SessionState",
+    "VRP",
+    "ValidationState",
     "apply_update_message",
     "establish_neighbor",
     "select_best_path",
+    "validate_origin",
+    "vrp_covers_route",
 ]
