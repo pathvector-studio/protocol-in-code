@@ -31,6 +31,11 @@ Both are independent tracks.
    - Lens: separate validation function + tri-state outcome
    - Source: `src/protocol_in_code/bgp/validation.py`
 
+5. `modules/bgp/module-05-policy-after-validation.md`
+   - Question: What does the router do with valid / invalid / not_found after validation?
+   - Lens: policy function + explicit action output
+   - Source: `src/protocol_in_code/bgp/policy.py`
+
 ## Future Tracks
 
 ### DNS
