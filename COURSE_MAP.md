@@ -36,6 +36,31 @@ Both are independent tracks.
    - Lens: policy function + explicit action output
    - Source: `src/protocol_in_code/bgp/policy.py`
 
+6. `modules/bgp/module-06-where-routes-live.md`
+   - Question: Where do received, selected, and advertised routes live?
+   - Lens: Adj-RIB-In + Loc-RIB + Adj-RIB-Out
+   - Source: `src/protocol_in_code/bgp/ribs.py`
+
+7. `modules/bgp/module-07-import-policy-rewrites-inputs.md`
+   - Question: How does import policy rewrite or reject paths before best-path?
+   - Lens: input transformation + early drop
+   - Source: `src/protocol_in_code/bgp/import_policy.py`
+
+8. `modules/bgp/module-08-export-policy-decides-what-leaves.md`
+   - Question: Why is the exported route not always identical to the installed route?
+   - Lens: outbound rewrite + per-peer advertisement decision
+   - Source: `src/protocol_in_code/bgp/export_policy.py`
+
+9. `modules/bgp/module-09-session-loss-and-recompute.md`
+   - Question: What happens when a peer disappears and Loc-RIB must recompute?
+   - Lens: per-peer cleanup + replacement path selection
+   - Source: `src/protocol_in_code/bgp/recompute.py`
+
+10. `modules/bgp/module-10-one-route-through-the-pipeline.md`
+    - Question: How does one route move through the whole toy control plane?
+    - Lens: integration pipeline + end-to-end object flow
+    - Source: `src/protocol_in_code/bgp/pipeline.py`
+
 ## Future Tracks
 
 ### DNS
