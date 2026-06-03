@@ -43,6 +43,12 @@ if candidate.origin_type != current.origin_type:
 return candidate.next_hop < current.next_hop
 ```
 
+## Simplification Note
+
+This comparison chain mixes protocol-facing and teaching-facing fields on purpose.
+
+`weight` is a vendor-local preference, not an RFC 4271 path attribute, and the final `next_hop` comparison is only a deterministic fallback for the toy model. Read this lesson as "ordered branches decide the winner," not as a literal full RFC tie-break chain.
+
 ## Data That Matters
 
 | Field | Why it matters |

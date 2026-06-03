@@ -80,3 +80,9 @@ The learner can say all of the following without looking at notes:
 - "Loc-RIB is the selected local result."
 - "Adj-RIB-Out is outbound state, not just a copy of Loc-RIB."
 - "`build_candidates()` is the bridge from received attributes to best-path inputs."
+
+## Data Shape Note
+
+`build_candidates()` is intentionally lossy.
+It drops `peer_id` and keeps only the fields needed for pure best-path comparison.
+Later sessions have to restore peer ownership when validation state and policy action become part of the decision.

@@ -62,6 +62,12 @@ The important move in this session is to stop thinking of UPDATE as "a packet to
 - which attributes arrived with the new path?
 - did the route leave because of a withdrawal, or because the session itself died?
 
+## Toy Model Boundary
+
+This first UPDATE model is intentionally prefix-wide.
+
+`RoutingTable.withdraw()` removes the whole prefix entry from the table. Later sessions refine this into per-peer `Adj-RIB-In` state, where one peer can disappear while another peer's path for the same prefix remains.
+
 ## Code Landmarks
 
 ### `PathAttributes`

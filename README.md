@@ -13,9 +13,21 @@ This repository is intentionally separate from `protocol-lab`.
 
 The first subject is BGP.
 
-- Module 01: What a BGP neighbor needs
-- Module 02: How UPDATE changes state
-- Module 03: Best path selection as if statements
+- Session 01: What a BGP neighbor needs
+- Session 02: How UPDATE changes state
+- Session 03: Best path selection as if statements
+- Session 04: Origin validation is a separate decision
+- Session 05: Validation state does not act by itself
+- Session 06: Where routes live
+- Session 07: Import policy rewrites inputs
+- Session 08: Export policy decides what leaves
+- Session 09: Session loss and recompute
+- Session 10: One route through the whole pipeline
+- Session 11: Peer state gates UPDATE
+- Session 12: Export refresh after recompute
+- Session 13: Event dispatches announce, withdraw, and peer down
+- Session 14: One prefix becomes a decision set
+- Session 15: Build the toy speaker loop
 
 ## Repository Layout
 
@@ -42,11 +54,23 @@ Examples:
 - GitHub repository: the code itself
 - pathvector.dev: the explanations, module framing, and reading guidance
 
-The BGP modules currently map like this:
+The BGP sessions currently map like this:
 
-- Module 01 -> `src/protocol_in_code/bgp/session.py`
-- Module 02 -> `src/protocol_in_code/bgp/update.py`
-- Module 03 -> `src/protocol_in_code/bgp/best_path.py`
+- Session 01 -> `src/protocol_in_code/bgp/session.py`
+- Session 02 -> `src/protocol_in_code/bgp/update.py`
+- Session 03 -> `src/protocol_in_code/bgp/best_path.py`
+- Session 04 -> `src/protocol_in_code/bgp/validation.py`
+- Session 05 -> `src/protocol_in_code/bgp/policy.py`
+- Session 06 -> `src/protocol_in_code/bgp/ribs.py`
+- Session 07 -> `src/protocol_in_code/bgp/import_policy.py`
+- Session 08 -> `src/protocol_in_code/bgp/export_policy.py`
+- Session 09 -> `src/protocol_in_code/bgp/recompute.py`
+- Session 10 -> `src/protocol_in_code/bgp/pipeline.py`
+- Session 11 -> `src/protocol_in_code/bgp/peer_state.py`
+- Session 12 -> `src/protocol_in_code/bgp/export_refresh.py`
+- Session 13 -> `src/protocol_in_code/bgp/events.py`
+- Session 14 -> `src/protocol_in_code/bgp/decision_process.py`
+- Session 15 -> `src/protocol_in_code/bgp/speaker.py`
 
 ## Separation Rule
 

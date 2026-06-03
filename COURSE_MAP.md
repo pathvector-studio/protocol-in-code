@@ -61,6 +61,31 @@ Both are independent tracks.
     - Lens: integration pipeline + end-to-end object flow
     - Source: `src/protocol_in_code/bgp/pipeline.py`
 
+11. `modules/bgp/module-11-peer-state-gates-updates.md`
+    - Question: When should the control plane accept or ignore an UPDATE?
+    - Lens: session gate + established-only writes
+    - Source: `src/protocol_in_code/bgp/peer_state.py`
+
+12. `modules/bgp/module-12-export-refresh-after-recompute.md`
+    - Question: How does a Loc-RIB change become per-peer advertise or withdraw?
+    - Lens: desired outbound state + Adj-RIB-Out reconciliation
+    - Source: `src/protocol_in_code/bgp/export_refresh.py`
+
+13. `modules/bgp/module-13-event-dispatch.md`
+    - Question: How do announce, withdraw, and peer-down events choose different control-plane branches?
+    - Lens: event dispatcher + per-event recompute flow
+    - Source: `src/protocol_in_code/bgp/events.py`
+
+14. `modules/bgp/module-14-prefix-decision-set.md`
+    - Question: How does one prefix become a policy-aware decision set across many peers?
+    - Lens: candidate evaluation loop + best among installable paths
+    - Source: `src/protocol_in_code/bgp/decision_process.py`
+
+15. `modules/bgp/module-15-build-the-toy-speaker-loop.md`
+    - Question: What does the smallest readable BGP speaker look like?
+    - Lens: object state + event handlers + export refresh loop
+    - Source: `src/protocol_in_code/bgp/speaker.py`
+
 ## Future Tracks
 
 ### DNS

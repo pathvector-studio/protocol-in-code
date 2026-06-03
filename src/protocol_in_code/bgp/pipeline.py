@@ -2,11 +2,22 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
-from .best_path import PathCandidate
+from .best_path import PathCandidate, select_best_path
 from .export_policy import ExportPolicy, PeerType, prepare_export
 from .import_policy import ImportPolicy, apply_import_policy
 from .policy import PolicyAction, ValidationPolicy, decide_route_policy
-from .ribs import AdjRIBIn, AdjRIBOut, LocRIB, install_best_path, stage_advertisement, store_received_path
+from .ribs import (
+    AdjRIBIn,
+    AdjRIBOut,
+    LocRIB,
+    candidate_from_attributes,
+    install_best_path,
+    remove_best_path,
+    received_attributes_for_prefix,
+    stage_advertisement,
+    store_received_path,
+    withdraw_staged_advertisement,
+)
 from .update import PathAttributes
 from .validation import BGPRoute, VRP, ValidationState, validate_origin
 
@@ -21,25 +32,11 @@ class PipelinePolicies:
 @dataclass(frozen=True)
 class PipelineResult:
     prefix: str
-    validation_state: ValidationState
-    action: PolicyAction
-    installed_path: PathCandidate | None
-    exported_path: PathCandidate | None
-
-
-def candidate_from_attributes(prefix: str, attributes: PathAttributes) -> PathCandidate:
-    origin_map = {
-        "igp": 0,
-        "egp": 1,
-        "incomplete": 2,
-    }
-    return PathCandidate(
-        prefix=prefix,
-        next_hop=attributes.next_hop,
-        local_pref=attributes.local_pref,
-        as_path=attributes.as_path,
-        origin_type=origin_map.get(attributes.origin.lower(), 2),
-    )
+    received_validation_state: ValidationState
+    received_action: PolicyAction
+    candidate_count: int
+    selected_path: PathCandidate | None
+    selected_exported_path: PathCandidate | None
 
 
 def origin_as_from_attributes(attributes: PathAttributes) -> int:
@@ -60,6 +57,24 @@ def apply_policy_action(
     return candidate
 
 
+def evaluate_candidate(
+    prefix: str,
+    attributes: PathAttributes,
+    vrps: list[VRP],
+    policies: PipelinePolicies,
+) -> tuple[ValidationState, PolicyAction, PathCandidate | None]:
+    route = BGPRoute(prefix=prefix, origin_as=origin_as_from_attributes(attributes))
+    validation_state = validate_origin(route, vrps)
+    raw_candidate = candidate_from_attributes(prefix, attributes)
+    imported = apply_import_policy(raw_candidate, validation_state, policies.import_policy)
+    if imported is None:
+        return validation_state, PolicyAction.REJECT, None
+
+    action = decide_route_policy(validation_state, policies.validation_policy)
+    installed = apply_policy_action(imported, action)
+    return validation_state, action, installed
+
+
 def process_single_route(
     peer_id: str,
     prefix: str,
@@ -74,40 +89,39 @@ def process_single_route(
 ) -> PipelineResult:
     store_received_path(adj_rib_in, peer_id, prefix, attributes)
 
-    route = BGPRoute(prefix=prefix, origin_as=origin_as_from_attributes(attributes))
-    validation_state = validate_origin(route, vrps)
+    validation_state, action, _ = evaluate_candidate(prefix, attributes, vrps, policies)
 
-    raw_candidate = candidate_from_attributes(prefix, attributes)
-    imported = apply_import_policy(raw_candidate, validation_state, policies.import_policy)
-    if imported is None:
+    installable_candidates: list[PathCandidate] = []
+    for _, received_attributes in received_attributes_for_prefix(adj_rib_in, prefix):
+        _, _, installable = evaluate_candidate(prefix, received_attributes, vrps, policies)
+        if installable is not None:
+            installable_candidates.append(installable)
+
+    if not installable_candidates:
+        remove_best_path(loc_rib, prefix)
+        withdraw_staged_advertisement(adj_rib_out, export_peer_id, prefix)
         return PipelineResult(
             prefix=prefix,
-            validation_state=validation_state,
-            action=PolicyAction.REJECT,
-            installed_path=None,
-            exported_path=None,
+            received_validation_state=validation_state,
+            received_action=action,
+            candidate_count=0,
+            selected_path=None,
+            selected_exported_path=None,
         )
 
-    action = decide_route_policy(validation_state, policies.validation_policy)
-    installed = apply_policy_action(imported, action)
-    if installed is None:
-        return PipelineResult(
-            prefix=prefix,
-            validation_state=validation_state,
-            action=action,
-            installed_path=None,
-            exported_path=None,
-        )
-
-    install_best_path(loc_rib, installed)
-    exported = prepare_export(installed, export_peer_type, policies.export_policy)
+    best = select_best_path(installable_candidates)
+    install_best_path(loc_rib, best)
+    exported = prepare_export(best, export_peer_type, policies.export_policy)
     if exported is not None:
         stage_advertisement(adj_rib_out, export_peer_id, exported)
+    else:
+        withdraw_staged_advertisement(adj_rib_out, export_peer_id, prefix)
 
     return PipelineResult(
         prefix=prefix,
-        validation_state=validation_state,
-        action=action,
-        installed_path=installed,
-        exported_path=exported,
+        received_validation_state=validation_state,
+        received_action=action,
+        candidate_count=len(installable_candidates),
+        selected_path=best,
+        selected_exported_path=exported,
     )

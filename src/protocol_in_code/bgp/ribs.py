@@ -39,6 +39,19 @@ def store_received_path(
     adj_rib_in.paths_by_peer.setdefault(peer_id, {})[prefix] = attributes
 
 
+def received_attributes_for_prefix(
+    adj_rib_in: AdjRIBIn,
+    prefix: str,
+) -> list[tuple[str, PathAttributes]]:
+    received: list[tuple[str, PathAttributes]] = []
+    for peer_id, attributes_by_prefix in adj_rib_in.paths_by_peer.items():
+        attributes = attributes_by_prefix.get(prefix)
+        if attributes is None:
+            continue
+        received.append((peer_id, attributes))
+    return received
+
+
 def withdraw_received_path(adj_rib_in: AdjRIBIn, peer_id: str, prefix: str) -> None:
     peer_table = adj_rib_in.paths_by_peer.get(peer_id)
     if peer_table is None:
@@ -51,20 +64,19 @@ def withdraw_received_path(adj_rib_in: AdjRIBIn, peer_id: str, prefix: str) -> N
 
 def build_candidates(adj_rib_in: AdjRIBIn, prefix: str) -> list[PathCandidate]:
     candidates: list[PathCandidate] = []
-    for attributes_by_prefix in adj_rib_in.paths_by_peer.values():
-        attributes = attributes_by_prefix.get(prefix)
-        if attributes is None:
-            continue
-        candidates.append(
-            PathCandidate(
-                prefix=prefix,
-                next_hop=attributes.next_hop,
-                local_pref=attributes.local_pref,
-                as_path=attributes.as_path,
-                origin_type=origin_to_origin_type(attributes.origin),
-            )
-        )
+    for _, attributes in received_attributes_for_prefix(adj_rib_in, prefix):
+        candidates.append(candidate_from_attributes(prefix, attributes))
     return candidates
+
+
+def candidate_from_attributes(prefix: str, attributes: PathAttributes) -> PathCandidate:
+    return PathCandidate(
+        prefix=prefix,
+        next_hop=attributes.next_hop,
+        local_pref=attributes.local_pref,
+        as_path=attributes.as_path,
+        origin_type=origin_to_origin_type(attributes.origin),
+    )
 
 
 def install_best_path(loc_rib: LocRIB, best_path: PathCandidate) -> None:
@@ -81,3 +93,17 @@ def stage_advertisement(
     path: PathCandidate,
 ) -> None:
     adj_rib_out.advertisements_by_peer.setdefault(peer_id, {})[path.prefix] = path
+
+
+def withdraw_staged_advertisement(
+    adj_rib_out: AdjRIBOut,
+    peer_id: str,
+    prefix: str,
+) -> None:
+    peer_table = adj_rib_out.advertisements_by_peer.get(peer_id)
+    if peer_table is None:
+        return
+
+    peer_table.pop(prefix, None)
+    if not peer_table:
+        adj_rib_out.advertisements_by_peer.pop(peer_id, None)

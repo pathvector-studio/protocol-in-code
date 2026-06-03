@@ -72,6 +72,12 @@ The important move in this session is to stop thinking in terms of "did the conf
 - which condition failed?
 - which state was the last successful one?
 
+## Toy Model Boundary
+
+This lesson exposes `hold_time`, `keepalive_time`, and `capabilities` because they are part of a realistic BGP session surface.
+
+The minimal state machine in `establish_neighbor()` does not negotiate or enforce them yet. In this lesson, the branches actually depend on `peer_ip`, `tcp_reachable`, valid AS numbers, `open_message_ok`, and `keepalive_received`.
+
 ## Code Landmarks
 
 ### `BGPSessionConfig`

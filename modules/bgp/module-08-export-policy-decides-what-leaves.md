@@ -48,6 +48,13 @@ if peer_type is PeerType.EBGP:
     exported = replace(exported, as_path=((policy.local_as,) * prepend_count) + exported.as_path)
 ```
 
+## Simplification Note
+
+`next_hop="self"` is a symbolic placeholder in this toy model, not a literal forwarding address rewrite.
+
+Likewise, the eBGP branch intentionally compresses several export-time behaviors into a single local-AS prepend step so the learner can see that outbound state is transformed, not copied.
+The `next_hop_self` knob here is a teaching switch, not a claim about the exact default NEXT_HOP behavior of every real eBGP export case.
+
 ## Data That Matters
 
 | Item | Why it matters |

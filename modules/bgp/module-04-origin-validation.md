@@ -62,6 +62,12 @@ The important move in this session is to stop saying "this was the best path, so
 - if covered, does the origin AS match?
 - if there is no covering VRP, is that `invalid` or `not_found`?
 
+## Design Choice
+
+This session teaches origin validation as a separate concept after best-path so the learner can split `best` from `authorized`.
+
+In integrated implementations, route validation may feed policy before final local installation or interact with selection at different points. The later pipeline lesson uses one such toy integration on purpose.
+
 ## Code Landmarks
 
 ### `BGPRoute`
