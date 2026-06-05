@@ -11,7 +11,9 @@ This repository is intentionally separate from `protocol-lab`.
 
 ## Current Focus
 
-The first subject is BGP.
+The current published subjects are BGP and OSPF.
+
+### BGP
 
 - Session 01: What a BGP neighbor needs
 - Session 02: How UPDATE changes state
@@ -29,11 +31,27 @@ The first subject is BGP.
 - Session 14: One prefix becomes a decision set
 - Session 15: Build the toy speaker loop
 
+### OSPF
+
+- Session 01: Hello starts the neighbor
+- Session 02: Neighbor state machine
+- Session 03: DR and BDR election
+- Session 04: LSA as an object
+- Session 05: Flooding decides where the LSA goes
+- Session 06: LSDB keeps the version
+- Session 07: SPF turns the LSDB into a tree
+- Session 08: The tree becomes routes
+- Session 09: Cost picks the winner
+- Session 10: Topology change recomputes the RIB
+- Session 11: Area boundaries rewrite the view
+- Session 12: Build the toy OSPF speaker loop
+
 ## Repository Layout
 
 | Path | Purpose |
 |---|---|
 | `src/protocol_in_code/bgp/` | BGP source files that the site explains module by module |
+| `src/protocol_in_code/ospf/` | OSPF source files that the site explains module by module |
 | `modules/` | Core course modules |
 | `notes/` | Short design notes, draft ideas, and future topics |
 | `COURSE_MAP.md` | Canonical map of tracks and modules |
@@ -71,6 +89,21 @@ The BGP sessions currently map like this:
 - Session 13 -> `src/protocol_in_code/bgp/events.py`
 - Session 14 -> `src/protocol_in_code/bgp/decision_process.py`
 - Session 15 -> `src/protocol_in_code/bgp/speaker.py`
+
+The OSPF sessions currently map like this:
+
+- Session 01 -> `src/protocol_in_code/ospf/hello.py`
+- Session 02 -> `src/protocol_in_code/ospf/neighbor.py`
+- Session 03 -> `src/protocol_in_code/ospf/dr_election.py`
+- Session 04 -> `src/protocol_in_code/ospf/lsa.py`
+- Session 05 -> `src/protocol_in_code/ospf/flooding.py`
+- Session 06 -> `src/protocol_in_code/ospf/lsdb.py`
+- Session 07 -> `src/protocol_in_code/ospf/spf.py`
+- Session 08 -> `src/protocol_in_code/ospf/routing.py`
+- Session 09 -> `src/protocol_in_code/ospf/cost.py`
+- Session 10 -> `src/protocol_in_code/ospf/recompute.py`
+- Session 11 -> `src/protocol_in_code/ospf/areas.py`
+- Session 12 -> `src/protocol_in_code/ospf/speaker.py`
 
 ## Separation Rule
 

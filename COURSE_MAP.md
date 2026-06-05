@@ -82,9 +82,71 @@ Both are independent tracks.
     - Source: `src/protocol_in_code/bgp/decision_process.py`
 
 15. `modules/bgp/module-15-build-the-toy-speaker-loop.md`
-    - Question: What does the smallest readable BGP speaker look like?
-    - Lens: object state + event handlers + export refresh loop
-    - Source: `src/protocol_in_code/bgp/speaker.py`
+   - Question: What does the smallest readable BGP speaker look like?
+   - Lens: object state + event handlers + export refresh loop
+   - Source: `src/protocol_in_code/bgp/speaker.py`
+
+### OSPF
+
+1. `modules/ospf/module-01-hello-starts-the-neighbor.md`
+   - Question: What has to match before an OSPF Hello can even start a neighbor relationship?
+   - Lens: packet fields + first gate
+   - Source: `src/protocol_in_code/ospf/hello.py`
+
+2. `modules/ospf/module-02-neighbor-state-machine.md`
+   - Question: How does a received Hello turn into `Init`, `2-Way`, or `Full`?
+   - Lens: adjacency state + gate variables
+   - Source: `src/protocol_in_code/ospf/neighbor.py`
+
+3. `modules/ospf/module-03-dr-bdr-election.md`
+   - Question: If several routers share one broadcast segment, how does the code pick DR and BDR?
+   - Lens: candidate filtering + ranking
+   - Source: `src/protocol_in_code/ospf/dr_election.py`
+
+4. `modules/ospf/module-04-lsa-as-object.md`
+   - Question: What does a Router-LSA have to contain before flood and SPF can use it?
+   - Lens: object shape + version identity
+   - Source: `src/protocol_in_code/ospf/lsa.py`
+
+5. `modules/ospf/module-05-flooding-decides-where-lsa-goes.md`
+   - Question: Once a newer LSA is received, where should it be forwarded next?
+   - Lens: flood eligibility + outgoing interfaces
+   - Source: `src/protocol_in_code/ospf/flooding.py`
+
+6. `modules/ospf/module-06-lsdb-keeps-the-version.md`
+   - Question: How does the LSDB decide whether a newly received Router-LSA replaces the old one?
+   - Lens: area bucket + replace-or-ignore logic
+   - Source: `src/protocol_in_code/ospf/lsdb.py`
+
+7. `modules/ospf/module-07-spf-turns-lsdb-into-a-tree.md`
+   - Question: What are the exact inputs to SPF, and what object does SPF return?
+   - Lens: graph build + Dijkstra result
+   - Source: `src/protocol_in_code/ospf/spf.py`
+
+8. `modules/ospf/module-08-tree-becomes-routes.md`
+   - Question: How does the shortest-path tree turn into actual reachable prefixes?
+   - Lens: first hop recovery + route derivation
+   - Source: `src/protocol_in_code/ospf/routing.py`
+
+9. `modules/ospf/module-09-cost-picks-the-winner.md`
+   - Question: If the same prefix appears more than once, which route wins?
+   - Lens: route comparison + winner selection
+   - Source: `src/protocol_in_code/ospf/cost.py`
+
+10. `modules/ospf/module-10-topology-change-recomputes-the-rib.md`
+    - Question: When a Router-LSA changes, which part of the route table has to be recomputed?
+    - Lens: change trigger + route diff
+    - Source: `src/protocol_in_code/ospf/recompute.py`
+
+11. `modules/ospf/module-11-area-boundaries-rewrite-the-view.md`
+    - Question: What changes when routes cross an area boundary through an ABR-like summary step?
+    - Lens: summary generation + import rewrite
+    - Source: `src/protocol_in_code/ospf/areas.py`
+
+12. `modules/ospf/module-12-build-the-toy-ospf-speaker-loop.md`
+    - Question: What does the smallest readable OSPF speaker look like when Hello, LSDB, SPF, and area summary are connected?
+    - Lens: speaker object + event-shaped methods
+    - Source: `src/protocol_in_code/ospf/speaker.py`
 
 ## Future Tracks
 
