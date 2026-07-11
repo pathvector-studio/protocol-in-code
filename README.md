@@ -27,6 +27,8 @@ The course is organized as tracks: one protocol per track, each ending with a
 | TCP | Published | 11 |
 | TLS | Published | 9 |
 | HTTP/QUIC | Published | 10 |
+| Packet Parser | Published | 5 |
+| RPKI | Published | 5 |
 
 `COURSE_MAP.md` is the canonical map of published tracks. `IDEAS.md` is the generation
 queue: full session plans for planned tracks and candidates beyond them.
@@ -113,6 +115,22 @@ queue: full session plans for planned tracks and candidates beyond them.
 - Session 08: QUIC streams don't block each other
 - Session 09: Flow control is a credit balance
 - Session 10: Build the toy HTTP server loop
+
+### Packet Parser
+
+- Session 01: Bytes have a shape
+- Session 02: Peel one layer, find the next
+- Session 03: Bits don't align to bytes
+- Session 04: The checksum is arithmetic, not magic
+- Session 05: Build the toy pcap reader
+
+### RPKI
+
+- Session 01: A ROA is a permission slip
+- Session 02: Covering is prefix math
+- Session 03: Three verdicts, not two
+- Session 04: Policy decides what a verdict means
+- Session 05: Build the toy validator loop
 
 ## Repository Layout
 
@@ -223,6 +241,22 @@ The HTTP/QUIC sessions currently map like this (one track, two source packages):
 - Session 08 -> `src/protocol_in_code/quic/streams.py`
 - Session 09 -> `src/protocol_in_code/quic/flow_control.py`
 - Session 10 -> `src/protocol_in_code/http/server_loop.py`
+
+The Packet Parser sessions currently map like this:
+
+- Session 01 -> `src/protocol_in_code/parser/ethernet.py`
+- Session 02 -> `src/protocol_in_code/parser/dispatch.py`
+- Session 03 -> `src/protocol_in_code/parser/ip.py`
+- Session 04 -> `src/protocol_in_code/parser/checksum.py`
+- Session 05 -> `src/protocol_in_code/parser/pcap_loop.py`
+
+The RPKI sessions currently map like this:
+
+- Session 01 -> `src/protocol_in_code/rpki/roa.py`
+- Session 02 -> `src/protocol_in_code/rpki/covering.py`
+- Session 03 -> `src/protocol_in_code/rpki/validate.py`
+- Session 04 -> `src/protocol_in_code/rpki/policy.py`
+- Session 05 -> `src/protocol_in_code/rpki/validator_loop.py`
 
 ## Separation Rule
 

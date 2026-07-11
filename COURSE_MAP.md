@@ -22,7 +22,9 @@ The course is organized as **tracks**: one protocol, one directory, one arc that
 | TCP | Published | 11 | connection state, timers, and recovery as explicit variables |
 | TLS | Published | 9 | negotiation, trust chains, and key schedules as functions |
 | HTTP/QUIC | Published | 10 | parsing, pooling, and multiplexing as stateful logic |
-| (10 candidate tracks) | Idea pool | ~51 | see `IDEAS.md` |
+| Packet Parser | Published | 5 | headers as offset promises, bit masks, and one-line checksums |
+| RPKI | Published | 5 | ROAs, prefix math, and the tri-state verdict under BGP policy |
+| (8 candidate tracks) | Idea pool | ~41 | see `IDEAS.md` |
 
 Full session plans (titles, Lens, Source) for planned tracks are in [`IDEAS.md`](IDEAS.md) —
 the generation queue. A track moves here when its modules are generated.
@@ -370,12 +372,70 @@ and `src/protocol_in_code/quic/` (sessions 08-09). Modules and walkthroughs live
     - Lens: server object + per-request pipeline + decision trace
     - Source: `src/protocol_in_code/http/server_loop.py`
 
+### Packet Parser
+
+The byte-level foundation the other tracks deliberately skip.
+
+1. `modules/parser/module-01-bytes-have-a-shape.md`
+   - Question: How does the parser know which bytes are which field, without reading anything but position?
+   - Lens: named offset constants + explicit slices
+   - Source: `src/protocol_in_code/parser/ethernet.py`
+
+2. `modules/parser/module-02-peel-one-layer-find-the-next.md`
+   - Question: How does a number like 0x0800 or 6 turn into a decision about which parser to call?
+   - Lens: literal number-to-name tables + lookup
+   - Source: `src/protocol_in_code/parser/dispatch.py`
+
+3. `modules/parser/module-03-bits-dont-align-to-bytes.md`
+   - Question: How does the parser pull an exact field out of the middle of a byte?
+   - Lens: shifts and masks with named bit constants
+   - Source: `src/protocol_in_code/parser/ip.py`
+
+4. `modules/parser/module-04-the-checksum-is-arithmetic-not-magic.md`
+   - Question: What does 16-bit addition with end-around carry do, and why does a valid header sum to all-ones?
+   - Lens: pure integer arithmetic, no dataclasses (like tcp/seqnum.py)
+   - Source: `src/protocol_in_code/parser/checksum.py`
+
+5. `modules/parser/module-05-build-the-toy-pcap-reader.md`
+   - Question: What does it take to turn a pcap byte stream into the layered read the last four sessions built?
+   - Lens: byte-order detection from the magic + record loop + per-packet layer walk
+   - Source: `src/protocol_in_code/parser/pcap_loop.py`
+
+### RPKI
+
+The deeper standalone treatment of what BGP sessions 04-05 introduced; verdicts here
+feed the policy shapes the learner saw there.
+
+1. `modules/rpki/module-01-a-roa-is-a-permission-slip.md`
+   - Question: What is a ROA, stripped of everything except the three facts it asserts?
+   - Lens: three-field object + structural validation
+   - Source: `src/protocol_in_code/rpki/roa.py`
+
+2. `modules/rpki/module-02-covering-is-prefix-math.md`
+   - Question: "Does this ROA say anything about this announcement?" is really two questions — what are they?
+   - Lens: range containment and specificity as two separate functions
+   - Source: `src/protocol_in_code/rpki/covering.py`
+
+3. `modules/rpki/module-03-three-verdicts-not-two.md`
+   - Question: Why three verdicts instead of a bool, and what separates the two flavors of invalid?
+   - Lens: tri-state outcome + reason strings (deepens bgp/validation.py)
+   - Source: `src/protocol_in_code/rpki/validate.py`
+
+4. `modules/rpki/module-04-policy-decides-what-a-verdict-means.md`
+   - Question: A verdict is a fact about the world — what does a router actually do with it, and who decides?
+   - Lens: two policy booleans + verdict-to-action mapping (deepens bgp/policy.py)
+   - Source: `src/protocol_in_code/rpki/policy.py`
+
+5. `modules/rpki/module-05-build-the-toy-validator-loop.md`
+   - Question: What does a validator's whole job look like when load, check, and table sweep share one object?
+   - Lens: validator object + decision trace + verdict counting
+   - Source: `src/protocol_in_code/rpki/validator_loop.py`
+
 ## Planned Tracks
 
 Session plans for candidate tracks are drafted in [`IDEAS.md`](IDEAS.md) with per-module
-titles in the same naming style. Next candidates (not yet confirmed): Packet Parser,
-RPKI, DHCP, RIP, NAT/conntrack, ARP/ND, Rate Limiter, Load Balancer, NTP,
-Small State Machines (VRRP+BFD).
+titles in the same naming style. Next candidates (not yet confirmed): DHCP, RIP,
+NAT/conntrack, ARP/ND, Rate Limiter, Load Balancer, NTP, Small State Machines (VRRP+BFD).
 
 Candidate tracks beyond these (Packet Parser, RPKI, DHCP, RIP, NAT/conntrack, ARP/ND,
 Rate Limiter, Load Balancer, NTP, Small State Machines) are also drafted in `IDEAS.md`.
