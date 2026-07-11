@@ -5,9 +5,29 @@
 - Beginner course: `protocol-lab`
 - Intermediate course: `protocol-in-code`
 
-Both are independent tracks.
+Both are independent courses.
 
-## Current Track
+## Track Status
+
+The course is organized as **tracks**: one protocol, one directory, one arc that ends with
+"Build the toy X loop". Every track lives in three places with the same name:
+`modules/<track>/` (the sessions), `src/protocol_in_code/<track>/` (the code being read),
+`examples/<track>/` (runnable walkthroughs).
+
+| Track | Status | Modules | Arc |
+|---|---|---|---|
+| BGP | Published | 15 | route selection and policy as ordered condition branches |
+| OSPF | Published | 12 | link state → flooding → SPF → RIB |
+| DNS | Published | 8 | recursive resolution as a bounded loop with a cache in front |
+| TCP | Published | 11 | connection state, timers, and recovery as explicit variables |
+| TLS | Published | 9 | negotiation, trust chains, and key schedules as functions |
+| HTTP/QUIC | Published | 10 | parsing, pooling, and multiplexing as stateful logic |
+| (10 candidate tracks) | Idea pool | ~51 | see `IDEAS.md` |
+
+Full session plans (titles, Lens, Source) for planned tracks are in [`IDEAS.md`](IDEAS.md) —
+the generation queue. A track moves here when its modules are generated.
+
+## Published Tracks
 
 ### BGP
 
@@ -148,24 +168,215 @@ Both are independent tracks.
     - Lens: speaker object + event-shaped methods
     - Source: `src/protocol_in_code/ospf/speaker.py`
 
-## Future Tracks
-
 ### DNS
 
-- recursive resolution as a function chain
-- cache lookup as state + TTL logic
+1. `modules/dns/module-01-query-as-question-object.md`
+   - Question: What is a DNS query made of, and when are two lookups the same lookup?
+   - Lens: question identity + structural validation
+   - Source: `src/protocol_in_code/dns/query.py`
+
+2. `modules/dns/module-02-the-resolver-walks-down-the-tree.md`
+   - Question: How does a resolver get from the root to an answer, one referral at a time?
+   - Lens: bounded loop + longest-match descent
+   - Source: `src/protocol_in_code/dns/walk.py`
+
+3. `modules/dns/module-03-delegation-is-a-referral-not-an-answer.md`
+   - Question: How does the resolver decide whether a response is an answer, a hand-off, or a dead end?
+   - Lens: response classification + ordered branches
+   - Source: `src/protocol_in_code/dns/referral.py`
+
+4. `modules/dns/module-04-the-cache-answers-first.md`
+   - Question: What exactly decides cache hit versus miss versus expired?
+   - Lens: keyed state + read-time expiry
+   - Source: `src/protocol_in_code/dns/cache.py`
+
+5. `modules/dns/module-05-ttl-is-a-clock-not-a-config.md`
+   - Question: What TTL does a client actually receive, and who removes an entry at zero?
+   - Lens: time arithmetic + sweep function
+   - Source: `src/protocol_in_code/dns/ttl.py`
+
+6. `modules/dns/module-06-cname-restarts-the-question.md`
+   - Question: How does asking for an A record end at one when the name is an alias?
+   - Lens: name substitution + loop guards
+   - Source: `src/protocol_in_code/dns/cname.py`
+
+7. `modules/dns/module-07-failure-has-flavors.md`
+   - Question: Why is NXDOMAIN an answer while SERVFAIL and timeout are reasons to retry?
+   - Lens: failure classification + fallback loop
+   - Source: `src/protocol_in_code/dns/failures.py`
+
+8. `modules/dns/module-08-build-the-toy-resolver-loop.md`
+   - Question: What does the smallest readable resolver look like when validation, cache, walk, and CNAME restart are connected?
+   - Lens: pipeline object + decision trace
+   - Source: `src/protocol_in_code/dns/resolver.py`
 
 ### TCP
 
-- handshake as state machine
-- retransmission as timeout + branch logic
+1. `modules/tcp/module-01-a-segment-carries-state.md`
+   - Question: What does a TCP segment carry, and what combination of flags and payload is nonsensical on its face?
+   - Lens: object shape + structural validity
+   - Source: `src/protocol_in_code/tcp/segment.py`
+
+2. `modules/tcp/module-02-three-packets-to-say-hello.md`
+   - Question: Why does establishing a connection take exactly three segments, and what state is each side in after each one?
+   - Lens: state transition table + reply per step
+   - Source: `src/protocol_in_code/tcp/handshake.py`
+
+3. `modules/tcp/module-03-sequence-numbers-wrap-around.md`
+   - Question: What does "before" mean once 32-bit sequence numbers wrap, and why is plain `<` the wrong tool?
+   - Lens: modular arithmetic + signed-difference comparison
+   - Source: `src/protocol_in_code/tcp/seqnum.py`
+
+4. `modules/tcp/module-04-the-window-is-room-left.md`
+   - Question: What is the receive window, really, and why is it never stored — only computed?
+   - Lens: derived value + buffer occupancy
+   - Source: `src/protocol_in_code/tcp/window.py`
+
+5. `modules/tcp/module-05-the-timer-learns-the-network.md`
+   - Question: How does TCP decide how long to wait before declaring loss, when the right answer changes every round trip?
+   - Lens: feedback estimator + clamped timer
+   - Source: `src/protocol_in_code/tcp/rto.py`
+
+6. `modules/tcp/module-06-three-duplicates-mean-loss.md`
+   - Question: How does a sender infer loss from ACKs alone, without waiting for a timer?
+   - Lens: duplicate counter + threshold branch
+   - Source: `src/protocol_in_code/tcp/fast_retransmit.py`
+
+7. `modules/tcp/module-07-cwnd-is-just-a-variable.md`
+   - Question: Read as code, is congestion control anything more than rules for moving one integer up or down?
+   - Lens: two-variable update rules + phase branch
+   - Source: `src/protocol_in_code/tcp/congestion.py`
+
+8. `modules/tcp/module-08-out-of-order-is-not-lost.md`
+   - Question: What happens to a segment that arrives ahead of expectation, and how does the receiver catch up in one step?
+   - Lens: gap buffer + contiguous drain loop
+   - Source: `src/protocol_in_code/tcp/reassembly.py`
+
+9. `modules/tcp/module-09-goodbye-takes-four-packets.md`
+   - Question: Why does closing take four segments and a wait, instead of ending when one side is done talking?
+   - Lens: two-sided close state machine + arithmetic expiry
+   - Source: `src/protocol_in_code/tcp/teardown.py`
+
+10. `modules/tcp/module-10-rst-ends-everything-now.md`
+    - Question: What does a RST-ended connection skip, and what decides whether a RST is allowed to end it?
+    - Lens: unconditional exit + in-window gate
+    - Source: `src/protocol_in_code/tcp/reset.py`
+
+11. `modules/tcp/module-11-build-the-toy-tcp-loop.md`
+    - Question: What does one endpoint's whole life look like when handshake, delivery, congestion, reset, and teardown share a single object?
+    - Lens: endpoint object + trace of every decision
+    - Source: `src/protocol_in_code/tcp/speaker.py`
 
 ### TLS
 
-- handshake as negotiated capabilities
-- certificate validation as decision flow
+1. `modules/tls/module-01-hello-lists-everything-you-can-do.md`
+   - Question: What is a ClientHello actually made of, and what makes one invalid before any negotiation starts?
+   - Lens: capability declaration as a printable object
+   - Source: `src/protocol_in_code/tls/messages.py`
 
-### HTTP / QUIC
+2. `modules/tls/module-02-agreement-is-a-set-intersection.md`
+   - Question: When client and server each bring an ordered list of what they support, whose order decides the pick?
+   - Lens: set intersection + server preference order
+   - Source: `src/protocol_in_code/tls/negotiate.py`
 
-- request lifecycle as layered function calls
-- stream selection and multiplexing as stateful logic
+3. `modules/tls/module-03-keys-grow-on-a-schedule.md`
+   - Question: Where does each TLS secret come from, and why can none of them be computed out of order?
+   - Lens: derive chain + staged secrets
+   - Source: `src/protocol_in_code/tls/key_schedule.py`
+
+4. `modules/tls/module-04-trust-is-a-walk-up-the-chain.md`
+   - Question: What turns a stack of certificates into a single yes/no answer, and in what order do the checks run?
+   - Lens: leaf-to-root walk loop + trust store lookup
+   - Source: `src/protocol_in_code/tls/chain.py`
+
+5. `modules/tls/module-05-a-cert-is-for-a-name.md`
+   - Question: What decides whether a trusted certificate is allowed to speak for the hostname you asked for?
+   - Lens: exact and wildcard matching rules as ordered branches
+   - Source: `src/protocol_in_code/tls/hostname.py`
+
+6. `modules/tls/module-06-resumption-is-a-cache-hit.md`
+   - Question: What does a session ticket let a client skip, and what decides whether a stored ticket is still good?
+   - Lens: keyed store + read-time expiry (same shape as the DNS cache)
+   - Source: `src/protocol_in_code/tls/resumption.py`
+
+7. `modules/tls/module-07-the-record-layer-is-an-envelope.md`
+   - Question: What does a record protect, what stays visible outside, and what does a bad tag tell you versus what it doesn't?
+   - Lens: framing + integrity tag
+   - Source: `src/protocol_in_code/tls/record.py`
+
+8. `modules/tls/module-08-failure-is-a-typed-message.md`
+   - Question: When a handshake fails, what exactly gets sent back, and who decides whether the connection ends?
+   - Lens: typed alerts + verdict-to-alert mapping tables
+   - Source: `src/protocol_in_code/tls/alert.py`
+
+9. `modules/tls/module-09-build-the-toy-handshake-loop.md`
+   - Question: What does a complete handshake look like when hello, negotiation, verification, keys, tickets, and one protected record share two functions?
+   - Lens: integration driver + decision trace
+   - Source: `src/protocol_in_code/tls/handshake_loop.py`
+
+### HTTP/QUIC
+
+This track spans two source packages: `src/protocol_in_code/http/` (sessions 01-07, 10)
+and `src/protocol_in_code/quic/` (sessions 08-09). Modules and walkthroughs live in
+`modules/http-quic/` and `examples/http-quic/`.
+
+1. `modules/http-quic/module-01-a-request-is-parsed-text.md`
+   - Question: Before any semantics or routing, what shape does raw HTTP text have to match, and what breaks it?
+   - Lens: text splitting + shape validation
+   - Source: `src/protocol_in_code/http/parse.py`
+
+2. `modules/http-quic/module-02-headers-come-with-rules.md`
+   - Question: What turns a flat list of name/value pairs into "valid" or "invalid," and who decides?
+   - Lens: normalization + a visible dict of rules
+   - Source: `src/protocol_in_code/http/headers.py`
+
+3. `modules/http-quic/module-03-keep-alive-is-a-pool.md`
+   - Question: How does a client decide between reusing an idle connection and opening a new one, and what makes an idle one stop being reusable?
+   - Lens: keyed pool + read-time eviction
+   - Source: `src/protocol_in_code/http/pool.py`
+
+4. `modules/http-quic/module-04-cacheable-is-a-decision-tree.md`
+   - Question: Should this response be stored, can a stored copy be reused right now, and does revalidation confirm nothing changed?
+   - Lens: three ordered decision functions
+   - Source: `src/protocol_in_code/http/caching.py`
+
+5. `modules/http-quic/module-05-redirects-are-a-bounded-loop.md`
+   - Question: What two mechanisms make redirect-following guaranteed to terminate, and what determines whether a POST survives the trip?
+   - Lens: bounded loop + visited set + method rewrite rules
+   - Source: `src/protocol_in_code/http/redirect.py`
+
+6. `modules/http-quic/module-06-chunked-is-a-parser-state-machine.md`
+   - Question: What single field tracks where the parser is in the size-line/data alternation, and what makes an error permanent?
+   - Lens: explicit parser states + sticky terminals
+   - Source: `src/protocol_in_code/http/chunked.py`
+
+7. `modules/http-quic/module-07-streams-share-one-connection.md`
+   - Question: What proves each HTTP/2 stream's state is tracked separately, and what makes the first frame on a stream special?
+   - Lens: per-stream state dict + frame dispatch
+   - Source: `src/protocol_in_code/http/h2_streams.py`
+
+8. `modules/http-quic/module-08-quic-streams-dont-block-each-other.md`
+   - Question: What, mechanically, keeps one stream's gap from ever touching another stream's delivery?
+   - Lens: the TCP reassembly buffer shape, keyed per stream
+   - Source: `src/protocol_in_code/quic/streams.py`
+
+9. `modules/http-quic/module-09-flow-control-is-a-credit-balance.md`
+   - Question: With flow control at two levels at once, what decides whether a send goes through, and what happens to each balance when the answer is no?
+   - Lens: one credit-account shape used at two levels
+   - Source: `src/protocol_in_code/quic/flow_control.py`
+
+10. `modules/http-quic/module-10-build-the-toy-http-server-loop.md`
+    - Question: What is the exact loop that wires parsing, header checks, and cache revalidation together, once per request, for as many requests as one connection carries?
+    - Lens: server object + per-request pipeline + decision trace
+    - Source: `src/protocol_in_code/http/server_loop.py`
+
+## Planned Tracks
+
+Session plans for candidate tracks are drafted in [`IDEAS.md`](IDEAS.md) with per-module
+titles in the same naming style. Next candidates (not yet confirmed): Packet Parser,
+RPKI, DHCP, RIP, NAT/conntrack, ARP/ND, Rate Limiter, Load Balancer, NTP,
+Small State Machines (VRRP+BFD).
+
+Candidate tracks beyond these (Packet Parser, RPKI, DHCP, RIP, NAT/conntrack, ARP/ND,
+Rate Limiter, Load Balancer, NTP, Small State Machines) are also drafted in `IDEAS.md`.
+This file only lists a track once its modules exist.
