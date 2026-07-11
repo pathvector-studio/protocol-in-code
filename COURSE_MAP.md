@@ -32,7 +32,14 @@ The course is organized as **tracks**: one protocol, one directory, one arc that
 | Load Balancer | Published | 6 | picking strategies, consistent hashing, and health as a state machine |
 | NTP | Published | 4 | offset and delay solved from four timestamps under an assumption of symmetry |
 | HA (VRRP+BFD) | Published | 4 | two-timescale failure detection racing toward the same failover decision |
-| (7 candidate tracks) | Idea pool | ~35 | see `IDEAS.md` (第3世代) |
+| ICMP | Published | 5 | errors, TTL expiry, and traceroute read off the wreckage of failed packets |
+| DNSSEC | Published | 5 | signatures, key chains, and validation as a walk from record up to trust anchor |
+| TCP2 (Operational TCP) | Published | 6 | TIME_WAIT, SYN cookies, Nagle/delayed-ACK, and the backlog as connection-lifecycle housekeeping |
+| STP | Published | 5 | root election, path cost, and port roles as the comparisons that kill Ethernet loops |
+| ICE | Published | 5 | NAT traversal as discovery, candidate gathering, and priority-ordered connectivity checks |
+| IGMP | Published | 4 | multicast membership as set operations kept honest by queries and snooped by switches |
+| Same Shape | Published | 5 | the course finale — naming the five recurring shapes across all 22 prior tracks |
+| (idea pool) | Empty — all three generations published | 0 | see `IDEAS.md` for the next-generation process |
 
 Full session plans (titles, Lens, Source) for planned tracks are in [`IDEAS.md`](IDEAS.md) —
 the generation queue. A track moves here when its modules are generated.
@@ -660,12 +667,202 @@ feed the policy shapes the learner saw there.
    - Lens: two-timescale race, fast detector then fallback safety net
    - Source: `src/protocol_in_code/ha/failover_loop.py`
 
+### ICMP
+
+1. `modules/icmp/module-01-an-error-is-a-packet-about-a-packet.md`
+   - Question: An ICMP error has to tell the sender what went wrong, but ICMP gets no context of its own — where does the diagnosis come from?
+   - Lens: original packet fragment embedded as evidence
+   - Source: `src/protocol_in_code/icmp/message.py`
+
+2. `modules/icmp/module-02-unreachable-has-flavors.md`
+   - Question: Why does "Destination Unreachable" split into four codes, and how does the sender change with the code?
+   - Lens: code-to-meaning table + per-code sender
+   - Source: `src/protocol_in_code/icmp/unreachable.py`
+
+3. `modules/icmp/module-03-ttl-is-a-hop-budget.md`
+   - Question: Nothing stops a packet from looping forever between routers — what does, and who reports it?
+   - Lens: decrement-and-check budget + error on zero
+   - Source: `src/protocol_in_code/icmp/ttl.py`
+
+4. `modules/icmp/module-04-time-exceeded-draws-the-map.md`
+   - Question: What decides which router answers a probe, and why is an error reply the probe's success signal?
+   - Lens: TTL-triggered reply as positional evidence
+   - Source: `src/protocol_in_code/icmp/probing.py`
+
+5. `modules/icmp/module-05-build-the-toy-traceroute-loop.md`
+   - Question: With no query that asks "where does this path go," how does looping over TTL and reading the wreckage assemble the answer?
+   - Lens: incrementing-TTL loop + stop-on-arrival
+   - Source: `src/protocol_in_code/icmp/trace_loop.py`
+
+### DNSSEC
+
+1. `modules/dnssec/module-01-a-signature-rides-beside-the-record.md`
+   - Question: A resolver trusts a cached answer that never talked to the authoritative server — what makes that trustworthy?
+   - Lens: signature riding beside the record
+   - Source: `src/protocol_in_code/dnssec/rrsig.py`
+
+2. `modules/dnssec/module-02-the-key-signs-the-key.md`
+   - Question: A zone publishes two keys — why two, and what exactly does each one sign?
+   - Lens: split key roles, one signs the other
+   - Source: `src/protocol_in_code/dnssec/dnskey.py`
+
+3. `modules/dnssec/module-03-ds-links-child-to-parent.md`
+   - Question: A child zone hands over an unseen key — what one fact lets the resolver decide to trust it?
+   - Lens: hash-of-key stored in the parent
+   - Source: `src/protocol_in_code/dnssec/ds.py`
+
+4. `modules/dnssec/module-04-validation-walks-up-the-tree.md`
+   - Question: What sequence of checks turns a signed answer into SECURE, one of three BOGUS flavors, or INSECURE?
+   - Lens: bottom-up chain walk + tri-plus-one verdict
+   - Source: `src/protocol_in_code/dnssec/chain.py`
+
+5. `modules/dnssec/module-05-build-the-toy-validating-resolver.md`
+   - Question: What does the smallest object look like that says, with a full trace, whether an answer is provably correct, wrong, or absent of proof?
+   - Lens: validator object + decision trace
+   - Source: `src/protocol_in_code/dnssec/validator_loop.py`
+
+### TCP2 (Operational TCP)
+
+1. `modules/tcp2/module-01-time-wait-is-a-promise-with-a-price.md`
+   - Question: TIME_WAIT promises a clean port after TWO_MSL ticks — what does that promise cost under fast connection churn?
+   - Lens: reserved-state cost made visible
+   - Source: `src/protocol_in_code/tcp2/time_wait_cost.py`
+
+2. `modules/tcp2/module-02-syn-cookies-are-stateless-memory.md`
+   - Question: With a full SYN queue and no stored half-open state, how does the server still recognize a real client's ACK?
+   - Lens: encode state into the sequence number itself
+   - Source: `src/protocol_in_code/tcp2/syn_cookies.py`
+
+3. `modules/tcp2/module-03-nagle-and-delayed-ack-deadlock.md`
+   - Question: Two reasonable optimizations run together — where does the 200ms stall actually come from?
+   - Lens: two waiting conditions with no third party to break them
+   - Source: `src/protocol_in_code/tcp2/nagle_delack.py`
+
+4. `modules/tcp2/module-04-keepalive-probes-an-idle-line.md`
+   - Question: If a connection goes silent with no FIN or RST, who notices it is dead, and how long does that take?
+   - Lens: probe-on-idle-timer + retry ceiling
+   - Source: `src/protocol_in_code/tcp2/keepalive.py`
+
+5. `modules/tcp2/module-05-the-backlog-is-two-queues.md`
+   - Question: "The listen backlog" sounds like one number — why two queues, and what happens when each fills?
+   - Lens: split incomplete/complete queues, distinct overflow behavior
+   - Source: `src/protocol_in_code/tcp2/backlog.py`
+
+6. `modules/tcp2/module-06-build-the-toy-connection-janitor.md`
+   - Question: What does one object look like whose entire job is running TIME_WAIT, keepalive, and backlog housekeeping over a scripted day?
+   - Lens: capstone wiring, no new logic
+   - Source: `src/protocol_in_code/tcp2/janitor_loop.py`
+
+### STP
+
+1. `modules/stp/module-01-the-root-is-the-lowest-id.md`
+   - Question: Every bridge could claim to be root — what single comparison decides which one is, and why does it run backwards?
+   - Lens: min(), not max() (inverted election)
+   - Source: `src/protocol_in_code/stp/root_election.py`
+
+2. `modules/stp/module-02-cost-decides-the-path-to-root.md`
+   - Question: With several ports that could reach root, which one does a bridge pick, and what gets summed along the way?
+   - Lens: cumulative cost + best-port selection
+   - Source: `src/protocol_in_code/stp/path_cost.py`
+
+3. `modules/stp/module-03-ports-have-roles.md`
+   - Question: What role does each port end up with, and how many can be "the way to root" at once?
+   - Lens: per-port role assignment, exactly one root port
+   - Source: `src/protocol_in_code/stp/port_roles.py`
+
+4. `modules/stp/module-04-blocking-is-how-loops-die.md`
+   - Question: Ethernet has no TTL, so loops flood forever — what comparison decides which port stops forwarding?
+   - Lens: designated-port comparison + blocking as default
+   - Source: `src/protocol_in_code/stp/blocking.py`
+
+5. `modules/stp/module-05-build-the-toy-spanning-tree-loop.md`
+   - Question: What does convergence look like when root election, path cost, and blocking run as a round-by-round exchange between real bridges?
+   - Lens: capstone wiring, round-based BPDU exchange
+   - Source: `src/protocol_in_code/stp/stp_loop.py`
+
+### ICE
+
+1. `modules/ice/module-01-stun-tells-you-your-own-address.md`
+   - Question: What does a STUN server actually tell you, and how does that become knowledge you're behind a NAT?
+   - Lens: reflexive address as the whole payload
+   - Source: `src/protocol_in_code/ice/stun.py`
+
+2. `modules/ice/module-02-nats-have-personalities.md`
+   - Question: Given observed mappings toward different destinations, what does the pattern tell you about the NAT's personality?
+   - Lens: mapping-behavior classification from observation
+   - Source: `src/protocol_in_code/ice/nat_behavior.py`
+
+3. `modules/ice/module-03-candidates-are-gathered-not-chosen.md`
+   - Question: Which addresses become candidates, what orders them, and how are those two questions kept separate?
+   - Lens: gather-then-rank as two independent functions
+   - Source: `src/protocol_in_code/ice/candidates.py`
+
+4. `modules/ice/module-04-pairs-are-checked-in-priority-order.md`
+   - Question: Gathering produced a pile of maybes on each side — how does that become an ordered plan, and what wins?
+   - Lens: sorted checklist + first-success pick
+   - Source: `src/protocol_in_code/ice/checklist.py`
+
+5. `modules/ice/module-05-build-the-toy-connectivity-check-loop.md`
+   - Question: What does it look like when two agents run STUN, NAT classification, gathering, and checklists against each other end to end?
+   - Lens: capstone wiring, two-agent simulation
+   - Source: `src/protocol_in_code/ice/ice_loop.py`
+
+### IGMP
+
+1. `modules/igmp/module-01-group-membership-is-a-set.md`
+   - Question: What is a multicast group, really, and why does membership collapse to ordinary set operations?
+   - Lens: group membership as a plain set
+   - Source: `src/protocol_in_code/igmp/membership.py`
+
+2. `modules/igmp/module-02-queries-keep-the-set-honest.md`
+   - Question: Nothing forgets a host on its own — what makes a group table trustworthy after a host vanishes without leaving?
+   - Lens: periodic query + read-time expiry
+   - Source: `src/protocol_in_code/igmp/querier.py`
+
+3. `modules/igmp/module-03-snooping-reads-someone-elses-mail.md`
+   - Question: A switch was never addressed by IGMP — how does it prune multicast without breaking the layering it crosses?
+   - Lens: passive eavesdropping, no protocol participation
+   - Source: `src/protocol_in_code/igmp/snooping.py`
+
+4. `modules/igmp/module-04-build-the-toy-querier-loop.md`
+   - Question: What does one full query cycle look like when a host goes quiet and the forwarding set actually shrinks?
+   - Lens: capstone wiring, router and switch together
+   - Source: `src/protocol_in_code/igmp/querier_loop.py`
+
+### Same Shape
+
+The course finale: no new protocol, five recurring shapes named and shown side by side
+across all 22 prior tracks.
+
+1. `modules/meta/module-01-the-expiring-dict-five-times.md`
+   - Question: Five tracks each built the same keyed, timestamped, read-time-expiry dict — what's left once the names are stripped, and where does it break?
+   - Lens: cross-track shape extraction (expiring dict)
+   - Source: `src/protocol_in_code/meta/expiring_state.py`
+
+2. `modules/meta/module-02-election-is-a-comparison-function-five-times.md`
+   - Question: BGP, OSPF, RIP, VRRP, and STP each "elect" without ever voting — what's actually happening?
+   - Lens: cross-track shape extraction (comparison-as-election)
+   - Source: `src/protocol_in_code/meta/election.py`
+
+3. `modules/meta/module-03-three-states-beat-two.md`
+   - Question: RPKI, BFD, ARP, and DNSSEC all refused a boolean verdict — is the third state buying the same thing each time?
+   - Lens: cross-track shape extraction (tri-state verdict)
+   - Source: `src/protocol_in_code/meta/tristate.py`
+
+4. `modules/meta/module-04-silence-means-failure-everywhere.md`
+   - Question: BFD, VRRP, keepalive, and conntrack all infer failure from silence after a deadline — what does the size of the gap tell you?
+   - Lens: cross-track shape extraction (silence-as-failure)
+   - Source: `src/protocol_in_code/meta/silence.py`
+
+5. `modules/meta/module-05-every-protocol-ends-in-a-loop.md`
+   - Question: Twenty-two capstones, twenty-two event sources — what's left in common once every protocol-specific detail is stripped away?
+   - Lens: cross-track shape extraction (the loop itself), course close
+   - Source: `src/protocol_in_code/meta/the_loop.py`
+
 ## Planned Tracks
 
-Session plans for candidate tracks are drafted in [`IDEAS.md`](IDEAS.md) with per-module
-titles in the same naming style. Next candidates (not yet confirmed, third-generation
-queue): ICMP/Traceroute, DNSSEC, TCP第2弾 (Operational TCP), STP, STUN/ICE, IGMP,
-Same Shape Different Protocol (course finale).
+All three planned generations (23 tracks) are now published. The candidate queue is
+empty. New candidates get drafted in [`IDEAS.md`](IDEAS.md) first — full session plans,
+per-module titles in the same naming style — before any generation happens.
 
-Candidate tracks beyond these are also drafted in `IDEAS.md`.
 This file only lists a track once its modules exist.

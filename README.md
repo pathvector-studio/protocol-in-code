@@ -37,6 +37,13 @@ The course is organized as tracks: one protocol per track, each ending with a
 | Load Balancer | Published | 6 |
 | NTP | Published | 4 |
 | HA (VRRP+BFD) | Published | 4 |
+| ICMP | Published | 5 |
+| DNSSEC | Published | 5 |
+| TCP2 (Operational TCP) | Published | 6 |
+| STP | Published | 5 |
+| ICE | Published | 5 |
+| IGMP | Published | 4 |
+| Same Shape | Published | 5 |
 
 `COURSE_MAP.md` is the canonical map of published tracks. `IDEAS.md` is the generation
 queue: full session plans for planned tracks and candidates beyond them.
@@ -204,6 +211,62 @@ queue: full session plans for planned tracks and candidates beyond them.
 - Session 02: Silence means failure
 - Session 03: Three states, both directions
 - Session 04: Build the toy failover loop
+
+### ICMP
+
+- Session 01: An error is a packet about a packet
+- Session 02: Unreachable has flavors
+- Session 03: TTL is a hop budget
+- Session 04: Time exceeded draws the map
+- Session 05: Build the toy traceroute loop
+
+### DNSSEC
+
+- Session 01: A signature rides beside the record
+- Session 02: The key signs the key
+- Session 03: DS links child to parent
+- Session 04: Validation walks up the tree
+- Session 05: Build the toy validating resolver
+
+### TCP2 (Operational TCP)
+
+- Session 01: TIME_WAIT is a promise with a price
+- Session 02: SYN cookies are stateless memory
+- Session 03: Nagle and delayed ACK deadlock
+- Session 04: Keepalive probes an idle line
+- Session 05: The backlog is two queues
+- Session 06: Build the toy connection janitor
+
+### STP
+
+- Session 01: The root is the lowest ID
+- Session 02: Cost decides the path to root
+- Session 03: Ports have roles
+- Session 04: Blocking is how loops die
+- Session 05: Build the toy spanning tree loop
+
+### ICE
+
+- Session 01: STUN tells you your own address
+- Session 02: NATs have personalities
+- Session 03: Candidates are gathered, not chosen
+- Session 04: Pairs are checked in priority order
+- Session 05: Build the toy connectivity check loop
+
+### IGMP
+
+- Session 01: Group membership is a set
+- Session 02: Queries keep the set honest
+- Session 03: Snooping reads someone else's mail
+- Session 04: Build the toy querier loop
+
+### Same Shape
+
+- Session 01: The expiring dict, five times
+- Session 02: Election is a comparison function, five times
+- Session 03: Three states beat two
+- Session 04: Silence means failure, everywhere
+- Session 05: Every protocol ends in a loop
 
 ## Repository Layout
 
@@ -395,6 +458,62 @@ The HA (VRRP+BFD) sessions currently map like this:
 - Session 02 -> `src/protocol_in_code/ha/vrrp_timeout.py`
 - Session 03 -> `src/protocol_in_code/ha/bfd.py`
 - Session 04 -> `src/protocol_in_code/ha/failover_loop.py`
+
+The ICMP sessions currently map like this:
+
+- Session 01 -> `src/protocol_in_code/icmp/message.py`
+- Session 02 -> `src/protocol_in_code/icmp/unreachable.py`
+- Session 03 -> `src/protocol_in_code/icmp/ttl.py`
+- Session 04 -> `src/protocol_in_code/icmp/probing.py`
+- Session 05 -> `src/protocol_in_code/icmp/trace_loop.py`
+
+The DNSSEC sessions currently map like this:
+
+- Session 01 -> `src/protocol_in_code/dnssec/rrsig.py`
+- Session 02 -> `src/protocol_in_code/dnssec/dnskey.py`
+- Session 03 -> `src/protocol_in_code/dnssec/ds.py`
+- Session 04 -> `src/protocol_in_code/dnssec/chain.py`
+- Session 05 -> `src/protocol_in_code/dnssec/validator_loop.py`
+
+The TCP2 (Operational TCP) sessions currently map like this:
+
+- Session 01 -> `src/protocol_in_code/tcp2/time_wait_cost.py`
+- Session 02 -> `src/protocol_in_code/tcp2/syn_cookies.py`
+- Session 03 -> `src/protocol_in_code/tcp2/nagle_delack.py`
+- Session 04 -> `src/protocol_in_code/tcp2/keepalive.py`
+- Session 05 -> `src/protocol_in_code/tcp2/backlog.py`
+- Session 06 -> `src/protocol_in_code/tcp2/janitor_loop.py`
+
+The STP sessions currently map like this:
+
+- Session 01 -> `src/protocol_in_code/stp/root_election.py`
+- Session 02 -> `src/protocol_in_code/stp/path_cost.py`
+- Session 03 -> `src/protocol_in_code/stp/port_roles.py`
+- Session 04 -> `src/protocol_in_code/stp/blocking.py`
+- Session 05 -> `src/protocol_in_code/stp/stp_loop.py`
+
+The ICE sessions currently map like this:
+
+- Session 01 -> `src/protocol_in_code/ice/stun.py`
+- Session 02 -> `src/protocol_in_code/ice/nat_behavior.py`
+- Session 03 -> `src/protocol_in_code/ice/candidates.py`
+- Session 04 -> `src/protocol_in_code/ice/checklist.py`
+- Session 05 -> `src/protocol_in_code/ice/ice_loop.py`
+
+The IGMP sessions currently map like this:
+
+- Session 01 -> `src/protocol_in_code/igmp/membership.py`
+- Session 02 -> `src/protocol_in_code/igmp/querier.py`
+- Session 03 -> `src/protocol_in_code/igmp/snooping.py`
+- Session 04 -> `src/protocol_in_code/igmp/querier_loop.py`
+
+The Same Shape sessions currently map like this:
+
+- Session 01 -> `src/protocol_in_code/meta/expiring_state.py`
+- Session 02 -> `src/protocol_in_code/meta/election.py`
+- Session 03 -> `src/protocol_in_code/meta/tristate.py`
+- Session 04 -> `src/protocol_in_code/meta/silence.py`
+- Session 05 -> `src/protocol_in_code/meta/the_loop.py`
 
 ## Separation Rule
 

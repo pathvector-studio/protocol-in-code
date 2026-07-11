@@ -19,9 +19,16 @@
 - [x] NTP トラックの実装 — 2026-07-11 全4セッション完了（4タイムスタンプ算術、非対称の不可視性）
 - [x] HA (VRRP+BFD) トラックの実装 — 2026-07-11 全4セッション完了（2時間スケールのフェイルオーバー）
 
-## 次の候補トラック確定待ち
-第1・第2世代は全て消化済み（14トラック / 116 modules）。次は `IDEAS.md` の**第3世代候補**
-（ICMP/Traceroute → DNSSEC → TCP第2弾 → STP → STUN/ICE → IGMP → Same Shape=最終章）から確定して投入。
+- [x] ICMP/Traceroute トラックの実装 — 2026-07-12 全5セッション完了（エラーを測定に転用するtraceroute capstone）
+- [x] DNSSEC トラックの実装 — 2026-07-12 全5セッション完了（trust anchorまでの再帰検証、INSECURE≠BOGUS）
+- [x] TCP第2弾 (Operational TCP) の実装 — 2026-07-12 全6セッション完了（SYN cookies、Nagle×delack 200ms、connection janitor）
+- [x] STP トラックの実装 — 2026-07-12 全5セッション完了（lowest-wins選出、三角形で1ポートblock）
+- [x] STUN/ICE トラックの実装 — 2026-07-12 全5セッション完了（NATトラック続編、hard-NATでrelay当選）
+- [x] IGMP トラックの実装 — 2026-07-12 全4セッション完了（interest期限切れ、snooping=越境の設計）
+- [x] Same Shape, Different Protocol（最終章）の実装 — 2026-07-12 全5セッション完了（22 capstone横断、沈黙5桁スプレッド実測）
+
+## キュー空
+全3世代 **23トラック / 151 modules** 公開済み。次世代のネタは `IDEAS.md` に同スタイルで起こしてから生成に回す（生成方式はメモリ `protocol-in-code-generation` 参照）。
 
 ## その先の候補トラック（`IDEAS.md` にタイトルまで起こし済み）
 Packet Parser / RPKI / DHCP / RIP / NAT-conntrack / ARP-ND / Rate Limiter / Load Balancer / NTP / Small State Machines (VRRP+BFD)
