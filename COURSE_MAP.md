@@ -24,7 +24,15 @@ The course is organized as **tracks**: one protocol, one directory, one arc that
 | HTTP/QUIC | Published | 10 | parsing, pooling, and multiplexing as stateful logic |
 | Packet Parser | Published | 5 | headers as offset promises, bit masks, and one-line checksums |
 | RPKI | Published | 5 | ROAs, prefix math, and the tri-state verdict under BGP policy |
-| (8 candidate tracks) | Idea pool | ~41 | see `IDEAS.md` |
+| DHCP | Published | 6 | broadcast discovery, offer deadlines, and lease expiry as shared state |
+| RIP | Published | 6 | distance-vector rumor propagation and its count-to-infinity failure mode |
+| NAT | Published | 6 | 5-tuple identity, stateless rewrite, and port allocation under expiry |
+| ARP/ND | Published | 4 | an unauthenticated cache that degrades trust instead of just expiring |
+| QoS | Published | 5 | token buckets, lazy refill, and hierarchical class trees as shaping math |
+| Load Balancer | Published | 6 | picking strategies, consistent hashing, and health as a state machine |
+| NTP | Published | 4 | offset and delay solved from four timestamps under an assumption of symmetry |
+| HA (VRRP+BFD) | Published | 4 | two-timescale failure detection racing toward the same failover decision |
+| (7 candidate tracks) | Idea pool | ~35 | see `IDEAS.md` (第3世代) |
 
 Full session plans (titles, Lens, Source) for planned tracks are in [`IDEAS.md`](IDEAS.md) —
 the generation queue. A track moves here when its modules are generated.
@@ -431,12 +439,233 @@ feed the policy shapes the learner saw there.
    - Lens: validator object + decision trace + verdict counting
    - Source: `src/protocol_in_code/rpki/validator_loop.py`
 
+### DHCP
+
+1. `modules/dhcp/module-01-discovery-is-shouting-into-the-dark.md`
+   - Question: A DHCP client has no IP address yet — how does a message even get sent, and what does that fact do to the shape of the message itself?
+   - Lens: broadcast as absence, not a value
+   - Source: `src/protocol_in_code/dhcp/discover.py`
+
+2. `modules/dhcp/module-02-an-offer-is-a-proposal-with-a-deadline.md`
+   - Question: How long does a server wait on an unconfirmed offer, and how does it learn — without hearing directly from the client — that it lost?
+   - Lens: deadline computed from made_at, echo as implicit decline
+   - Source: `src/protocol_in_code/dhcp/offer.py`
+
+3. `modules/dhcp/module-03-the-pool-hands-out-whats-free.md`
+   - Question: How does a server pick the next free address from a /24, and avoid double-handing an address while an offer is still pending?
+   - Lens: linear scan, two skip conditions (allocated vs on-hold)
+   - Source: `src/protocol_in_code/dhcp/pool.py`
+
+4. `modules/dhcp/module-04-a-lease-is-a-dict-with-an-expiry.md`
+   - Question: Why is the code managing a DHCP lease table line-for-line identical to the code managing three other unrelated expiring stores this course has already built?
+   - Lens: keyed state + read-time expiry (fourth appearance of the shape)
+   - Source: `src/protocol_in_code/dhcp/leases.py`
+
+5. `modules/dhcp/module-05-renewal-happens-before-the-end.md`
+   - Question: Why does a client start asking for a new lease long before the old one expires, and who is it allowed to ask at each point in that countdown?
+   - Lens: ordered condition branches (T1/T2/expiry, all >=)
+   - Source: `src/protocol_in_code/dhcp/renewal.py`
+
+6. `modules/dhcp/module-06-build-the-toy-dhcp-server-loop.md`
+   - Question: What does the server actually check, and in what order, to make DORA's four messages come out right every time — including when two servers answer the same DISCOVER?
+   - Lens: dispatch-then-delegate wiring, validate-first
+   - Source: `src/protocol_in_code/dhcp/server_loop.py`
+
+### RIP
+
+1. `modules/rip/module-01-a-route-is-a-rumor-with-a-distance.md`
+   - Question: A RipRoute is one neighbor's claim about hop count — what does it mean to trust a number like that, and what can the code check before you do?
+   - Lens: hearsay record, no ground truth to check against
+   - Source: `src/protocol_in_code/rip/route.py`
+
+2. `modules/rip/module-02-bellman-ford-is-a-for-loop.md`
+   - Question: What does it mean to run Bellman-Ford when all you have is a single pass over one neighbor's (prefix, metric) pairs?
+   - Lens: single-pass relax, add-then-compare, same-source override
+   - Source: `src/protocol_in_code/rip/update.py`
+
+3. `modules/rip/module-03-sixteen-means-unreachable.md`
+   - Question: Why is RIP's "unreachable" value 16 — not 255, not a billion — and what does picking a small number actually buy?
+   - Lens: small ceiling as deliberate short fuse (>= boundary)
+   - Source: `src/protocol_in_code/rip/infinity.py`
+
+4. `modules/rip/module-04-rumors-can-circle-back.md`
+   - Question: Why does a router that just lost a route end up believing its own rumor came back from a neighbor, and how many rounds does that belief take to burn out?
+   - Lens: unfiltered mutual re-advertisement, round-by-round climb
+   - Source: `src/protocol_in_code/rip/count_to_infinity.py`
+
+5. `modules/rip/module-05-dont-tell-me-what-i-told-you.md`
+   - Question: If the cure for count-to-infinity isn't smarter math, what is it, and where exactly does it run?
+   - Lens: send-side filter, one field checked (next_hop)
+   - Source: `src/protocol_in_code/rip/split_horizon.py`
+
+6. `modules/rip/module-06-build-the-toy-rip-loop.md`
+   - Question: What does the smallest readable RIP speaker look like when table, neighbors, outbound filter, and Bellman-Ford pass are wired into a round-robin convergence loop?
+   - Lens: two-phase advertise/receive wiring, gossip vs shared-map contrast
+   - Source: `src/protocol_in_code/rip/speaker.py`
+
+### NAT
+
+1. `modules/nat/module-01-a-connection-is-a-5-tuple.md`
+   - Question: What identifies a connection to the kernel, and does the reply direction require anything beyond swapping two fields of that same identity?
+   - Lens: identity as hashable key, not narrative
+   - Source: `src/protocol_in_code/nat/five_tuple.py`
+
+2. `modules/nat/module-02-translation-is-a-rewrite-function.md`
+   - Question: When a router performs NAT, does it mutate the packet in place, or produce a new packet and let the old one go?
+   - Lens: substitution, not mutation (frozen dataclasses)
+   - Source: `src/protocol_in_code/nat/rewrite.py`
+
+3. `modules/nat/module-03-the-reply-finds-its-way-back.md`
+   - Question: When a reply arrives from the internet, how does the router already know where it belongs, and when was that decision actually made?
+   - Lens: reply key pre-computed at insert time
+   - Source: `src/protocol_in_code/nat/table.py`
+
+4. `modules/nat/module-04-ports-are-a-shared-resource.md`
+   - Question: How does the NAT box hand out a port no other flow is using, and what happens the moment the pool runs out?
+   - Lens: linear-scan allocator with wraparound
+   - Source: `src/protocol_in_code/nat/ports.py`
+
+5. `modules/nat/module-05-state-expires-again.md`
+   - Question: With no close signal from the network, what decides a conntrack entry is dead, and why does that take 10x longer for TCP than UDP?
+   - Lens: stamp-and-compare expiry (fourth appearance)
+   - Source: `src/protocol_in_code/nat/timeout.py`
+
+6. `modules/nat/module-06-build-the-toy-nat-box-loop.md`
+   - Question: What does a packet's full round trip through tuple, rewrite, table, ports, and clock look like wired into one box?
+   - Lens: capstone wiring, no new logic
+   - Source: `src/protocol_in_code/nat/nat_loop.py`
+
+### ARP/ND
+
+1. `modules/arp/module-01-the-cache-has-moods.md`
+   - Question: When an ARP mapping outlives its freshness window, does it disappear, or just get less trusted?
+   - Lens: three-state degrade, not delete (vs. DNS binary expiry)
+   - Source: `src/protocol_in_code/arp/cache.py`
+
+2. `modules/arp/module-02-packets-wait-for-answers.md`
+   - Question: While an IP address is still unresolved, where does the packet that wanted to go there actually sit?
+   - Lens: per-IP FIFO queue, drop-oldest on overflow
+   - Source: `src/protocol_in_code/arp/pending.py`
+
+3. `modules/arp/module-03-anyone-can-answer.md`
+   - Question: With no authentication in ARP, what decides whether the cache believes an unsolicited announcement?
+   - Lens: policy gate on unsolicited overwrite only
+   - Source: `src/protocol_in_code/arp/gratuitous.py`
+
+4. `modules/arp/module-04-build-the-toy-arp-responder-loop.md`
+   - Question: What does one host's whole ARP life — sending, queuing, answering, gleaning — look like wired into a single object?
+   - Lens: capstone wiring + unconditional gleaning
+   - Source: `src/protocol_in_code/arp/responder_loop.py`
+
+### QoS
+
+1. `modules/qos/module-01-a-token-bucket-is-two-variables.md`
+   - Question: What decides whether a request is allowed or throttled, with no queue, no timer, and no scheduler?
+   - Lens: balance + lazy self-refill (vs. QUIC's externally-granted credit)
+   - Source: `src/protocol_in_code/qos/token_bucket.py`
+
+2. `modules/qos/module-02-refill-is-lazy.md`
+   - Question: With no background clock ticking, when does a token bucket's balance actually get updated?
+   - Lens: pure scalar math, settled on read (cf. dns/cache.py expiry check)
+   - Source: `src/protocol_in_code/qos/refill.py`
+
+3. `modules/qos/module-03-leaky-and-token-are-cousins.md`
+   - Question: Same two variables, same lazy-settlement trick — why does an identical burst pass a token bucket but overflow a leaky bucket?
+   - Lens: mirrored signs (add vs. subtract, floor vs. ceiling)
+   - Source: `src/protocol_in_code/qos/leaky_bucket.py`
+
+4. `modules/qos/module-04-classes-form-a-tree.md`
+   - Question: What has to be true of a class tree before hierarchical borrowing math is trustworthy, and how much can a class actually borrow on paper?
+   - Lens: three independent validation passes + static ancestor walk
+   - Source: `src/protocol_in_code/qos/classes.py`
+
+5. `modules/qos/module-05-build-the-toy-shaper-loop.md`
+   - Question: What does it take to wire four standalone mechanisms into something that classifies a packet and decides its fate, keeping one class's exhaustion isolated from another's?
+   - Lens: wiring, not new logic (one bucket per class name)
+   - Source: `src/protocol_in_code/qos/shaper_loop.py`
+
+### Load Balancer
+
+1. `modules/lb/module-01-round-robin-is-one-index.md`
+   - Question: How do you spread requests evenly across backends when you're willing to know nothing else about them?
+   - Lens: single wrapping integer (blind ring walk)
+   - Source: `src/protocol_in_code/lb/round_robin.py`
+
+2. `modules/lb/module-02-least-connections-is-a-counter.md`
+   - Question: If you track one number per backend, what does it buy you that round robin's blind index can't?
+   - Lens: per-backend counter + deterministic tiebreak
+   - Source: `src/protocol_in_code/lb/least_conn.py`
+
+3. `modules/lb/module-03-hashing-keeps-you-on-the-same-server.md`
+   - Question: How do you guarantee the same client lands on the same backend with no state at all, and what does that cost when the backend list changes?
+   - Lens: stateless modulo fold (ends on unsolved problem)
+   - Source: `src/protocol_in_code/lb/hash_pick.py`
+
+4. `modules/lb/module-04-the-ring-survives-a-server-change.md`
+   - Question: What has to change about the fold so only the keys that truly need to move actually move?
+   - Lens: shared circle, binary search (removes len(backends) from the fold)
+   - Source: `src/protocol_in_code/lb/ring.py`
+
+5. `modules/lb/module-05-health-is-a-state-machine.md`
+   - Question: What turns a stream of probe results into a routing decision, and why is going down fast and coming back slow the same design?
+   - Lens: asymmetric thresholds (fail-fast, recover-slow)
+   - Source: `src/protocol_in_code/lb/health.py`
+
+6. `modules/lb/module-06-build-the-toy-load-balancer-loop.md`
+   - Question: What does the smallest object look like that filters a live request through health before handing it to whichever picking strategy is configured?
+   - Lens: health filter before strategy dispatch, always
+   - Source: `src/protocol_in_code/lb/lb_loop.py`
+
+### NTP
+
+1. `modules/ntp/module-01-four-timestamps-two-unknowns.md`
+   - Question: An NTP exchange hands back four timestamps — what can actually be solved for from just those four numbers, and what has to be assumed to get there?
+   - Lens: derive offset/delay from two equations, not memorized formulas
+   - Source: `src/protocol_in_code/ntp/offset.py`
+
+2. `modules/ntp/module-02-stratum-is-depth-in-a-tree.md`
+   - Question: What does an NTP server's advertised stratum number actually count, and why does a client prefer a lower one even at the cost of a longer round trip?
+   - Lens: hop count, not quality score (like RIP metric)
+   - Source: `src/protocol_in_code/ntp/stratum.py`
+
+3. `modules/ntp/module-03-symmetry-is-an-assumption.md`
+   - Question: When outbound and return delay are unequal, exactly how wrong does the reported offset get — and can the protocol ever detect it?
+   - Lens: undetectable asymmetry error (half the delay gap)
+   - Source: `src/protocol_in_code/ntp/asymmetry.py`
+
+4. `modules/ntp/module-04-build-the-toy-ntp-client-loop.md`
+   - Question: Given several exchanges with a server, how does a client decide which sample to trust and apply its correction without a dangerous jump?
+   - Lens: filter by min-delay, then clamp (slew, not step)
+   - Source: `src/protocol_in_code/ntp/client_loop.py`
+
+### HA (VRRP+BFD)
+
+1. `modules/ha/module-01-the-highest-priority-speaks.md`
+   - Question: If several routers share one virtual IP, how does the code decide which one gets to be master?
+   - Lens: max() over (priority, ip) tuple, tiebreak built-in
+   - Source: `src/protocol_in_code/ha/vrrp_election.py`
+
+2. `modules/ha/module-02-silence-means-failure.md`
+   - Question: A VRRP backup never asks "are you alive?" — so how does it correctly infer the master is gone?
+   - Lens: keyed timestamp + read-time expiry (>= boundary)
+   - Source: `src/protocol_in_code/ha/vrrp_timeout.py`
+
+3. `modules/ha/module-03-three-states-both-directions.md`
+   - Question: How does a three-state machine reach mutual agreement that "the session is up" without a central decision-maker?
+   - Lens: ordered condition branches, graduated up / immediate down
+   - Source: `src/protocol_in_code/ha/bfd.py`
+
+4. `modules/ha/module-04-build-the-toy-failover-loop.md`
+   - Question: What does it actually look like when a millisecond-scale detector (BFD) and a seconds-scale detector (VRRP) are wired to watch the same failure on the same pair of routers?
+   - Lens: two-timescale race, fast detector then fallback safety net
+   - Source: `src/protocol_in_code/ha/failover_loop.py`
+
 ## Planned Tracks
 
 Session plans for candidate tracks are drafted in [`IDEAS.md`](IDEAS.md) with per-module
-titles in the same naming style. Next candidates (not yet confirmed): DHCP, RIP,
-NAT/conntrack, ARP/ND, Rate Limiter, Load Balancer, NTP, Small State Machines (VRRP+BFD).
+titles in the same naming style. Next candidates (not yet confirmed, third-generation
+queue): ICMP/Traceroute, DNSSEC, TCP第2弾 (Operational TCP), STP, STUN/ICE, IGMP,
+Same Shape Different Protocol (course finale).
 
-Candidate tracks beyond these (Packet Parser, RPKI, DHCP, RIP, NAT/conntrack, ARP/ND,
-Rate Limiter, Load Balancer, NTP, Small State Machines) are also drafted in `IDEAS.md`.
+Candidate tracks beyond these are also drafted in `IDEAS.md`.
 This file only lists a track once its modules exist.

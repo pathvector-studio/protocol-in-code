@@ -29,6 +29,14 @@ The course is organized as tracks: one protocol per track, each ending with a
 | HTTP/QUIC | Published | 10 |
 | Packet Parser | Published | 5 |
 | RPKI | Published | 5 |
+| DHCP | Published | 6 |
+| RIP | Published | 6 |
+| NAT | Published | 6 |
+| ARP/ND | Published | 4 |
+| QoS | Published | 5 |
+| Load Balancer | Published | 6 |
+| NTP | Published | 4 |
+| HA (VRRP+BFD) | Published | 4 |
 
 `COURSE_MAP.md` is the canonical map of published tracks. `IDEAS.md` is the generation
 queue: full session plans for planned tracks and candidates beyond them.
@@ -131,6 +139,71 @@ queue: full session plans for planned tracks and candidates beyond them.
 - Session 03: Three verdicts, not two
 - Session 04: Policy decides what a verdict means
 - Session 05: Build the toy validator loop
+
+### DHCP
+
+- Session 01: Discovery is shouting into the dark
+- Session 02: An offer is a proposal with a deadline
+- Session 03: The pool hands out what's free
+- Session 04: A lease is a dict with an expiry
+- Session 05: Renewal happens before the end
+- Session 06: Build the toy DHCP server loop
+
+### RIP
+
+- Session 01: A route is a rumor with a distance
+- Session 02: Bellman-Ford is a for loop
+- Session 03: Sixteen means unreachable
+- Session 04: Rumors can circle back
+- Session 05: Don't tell me what I told you
+- Session 06: Build the toy RIP loop
+
+### NAT
+
+- Session 01: A connection is a 5-tuple
+- Session 02: Translation is a rewrite function
+- Session 03: The reply finds its way back
+- Session 04: Ports are a shared resource
+- Session 05: State expires, again
+- Session 06: Build the toy NAT box loop
+
+### ARP/ND
+
+- Session 01: The cache has moods
+- Session 02: Packets wait for answers
+- Session 03: Anyone can answer
+- Session 04: Build the toy ARP responder loop
+
+### QoS
+
+- Session 01: A token bucket is two variables
+- Session 02: Refill is lazy
+- Session 03: Leaky and token are cousins
+- Session 04: Classes form a tree
+- Session 05: Build the toy shaper loop
+
+### Load Balancer
+
+- Session 01: Round robin is one index
+- Session 02: Least connections is a counter
+- Session 03: Hashing keeps you on the same server
+- Session 04: The ring survives a server change
+- Session 05: Health is a state machine
+- Session 06: Build the toy load balancer loop
+
+### NTP
+
+- Session 01: Four timestamps, two unknowns
+- Session 02: Stratum is depth in a tree
+- Session 03: Symmetry is an assumption
+- Session 04: Build the toy NTP client loop
+
+### HA (VRRP+BFD)
+
+- Session 01: The highest priority speaks
+- Session 02: Silence means failure
+- Session 03: Three states, both directions
+- Session 04: Build the toy failover loop
 
 ## Repository Layout
 
@@ -257,6 +330,71 @@ The RPKI sessions currently map like this:
 - Session 03 -> `src/protocol_in_code/rpki/validate.py`
 - Session 04 -> `src/protocol_in_code/rpki/policy.py`
 - Session 05 -> `src/protocol_in_code/rpki/validator_loop.py`
+
+The DHCP sessions currently map like this:
+
+- Session 01 -> `src/protocol_in_code/dhcp/discover.py`
+- Session 02 -> `src/protocol_in_code/dhcp/offer.py`
+- Session 03 -> `src/protocol_in_code/dhcp/pool.py`
+- Session 04 -> `src/protocol_in_code/dhcp/leases.py`
+- Session 05 -> `src/protocol_in_code/dhcp/renewal.py`
+- Session 06 -> `src/protocol_in_code/dhcp/server_loop.py`
+
+The RIP sessions currently map like this:
+
+- Session 01 -> `src/protocol_in_code/rip/route.py`
+- Session 02 -> `src/protocol_in_code/rip/update.py`
+- Session 03 -> `src/protocol_in_code/rip/infinity.py`
+- Session 04 -> `src/protocol_in_code/rip/count_to_infinity.py`
+- Session 05 -> `src/protocol_in_code/rip/split_horizon.py`
+- Session 06 -> `src/protocol_in_code/rip/speaker.py`
+
+The NAT sessions currently map like this:
+
+- Session 01 -> `src/protocol_in_code/nat/five_tuple.py`
+- Session 02 -> `src/protocol_in_code/nat/rewrite.py`
+- Session 03 -> `src/protocol_in_code/nat/table.py`
+- Session 04 -> `src/protocol_in_code/nat/ports.py`
+- Session 05 -> `src/protocol_in_code/nat/timeout.py`
+- Session 06 -> `src/protocol_in_code/nat/nat_loop.py`
+
+The ARP/ND sessions currently map like this:
+
+- Session 01 -> `src/protocol_in_code/arp/cache.py`
+- Session 02 -> `src/protocol_in_code/arp/pending.py`
+- Session 03 -> `src/protocol_in_code/arp/gratuitous.py`
+- Session 04 -> `src/protocol_in_code/arp/responder_loop.py`
+
+The QoS sessions currently map like this:
+
+- Session 01 -> `src/protocol_in_code/qos/token_bucket.py`
+- Session 02 -> `src/protocol_in_code/qos/refill.py`
+- Session 03 -> `src/protocol_in_code/qos/leaky_bucket.py`
+- Session 04 -> `src/protocol_in_code/qos/classes.py`
+- Session 05 -> `src/protocol_in_code/qos/shaper_loop.py`
+
+The Load Balancer sessions currently map like this:
+
+- Session 01 -> `src/protocol_in_code/lb/round_robin.py`
+- Session 02 -> `src/protocol_in_code/lb/least_conn.py`
+- Session 03 -> `src/protocol_in_code/lb/hash_pick.py`
+- Session 04 -> `src/protocol_in_code/lb/ring.py`
+- Session 05 -> `src/protocol_in_code/lb/health.py`
+- Session 06 -> `src/protocol_in_code/lb/lb_loop.py`
+
+The NTP sessions currently map like this:
+
+- Session 01 -> `src/protocol_in_code/ntp/offset.py`
+- Session 02 -> `src/protocol_in_code/ntp/stratum.py`
+- Session 03 -> `src/protocol_in_code/ntp/asymmetry.py`
+- Session 04 -> `src/protocol_in_code/ntp/client_loop.py`
+
+The HA (VRRP+BFD) sessions currently map like this:
+
+- Session 01 -> `src/protocol_in_code/ha/vrrp_election.py`
+- Session 02 -> `src/protocol_in_code/ha/vrrp_timeout.py`
+- Session 03 -> `src/protocol_in_code/ha/bfd.py`
+- Session 04 -> `src/protocol_in_code/ha/failover_loop.py`
 
 ## Separation Rule
 
