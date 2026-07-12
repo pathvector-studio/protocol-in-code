@@ -48,6 +48,13 @@ The course is organized as tracks: one protocol per track, each ending with a
 `COURSE_MAP.md` is the canonical map of published tracks. `IDEAS.md` is the generation
 queue: full session plans for planned tracks and candidates beyond them.
 
+**Don't read the tracks in table order.** See [`LEARNING_PATHS.md`](LEARNING_PATHS.md)
+for genre groupings, goal-based roadmaps (web engineer / infra / security / SRE), the
+complete-beginner entry point, and the Protocol Lab ↔ Protocol in Code cross-reference.
+
+日本語: トラックを表の順に読む必要はありません。ジャンル分け・目的別ロードマップ・
+初心者の入口・Protocol Lab との対応表は [`LEARNING_PATHS.md`](LEARNING_PATHS.md) へ。
+
 ### BGP
 
 - Session 01: What a BGP neighbor needs
@@ -277,6 +284,7 @@ queue: full session plans for planned tracks and candidates beyond them.
 | `examples/<track>/` | Runnable per-session walkthroughs, one directory per track |
 | `notes/` | Short design notes |
 | `COURSE_MAP.md` | Canonical map of published tracks and their modules |
+| `LEARNING_PATHS.md` | Genre map, goal-based roadmaps, and the Protocol Lab cross-reference |
 | `IDEAS.md` | Generation queue: session plans for planned tracks and candidate tracks |
 
 ## Course Shape
