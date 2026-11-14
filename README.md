@@ -530,3 +530,10 @@ Do not treat this repository as a companion appendix to `protocol-lab`.
 `protocol-lab` should stand on its own for beginner learners.
 
 `protocol-in-code` should stand on its own for intermediate learners who want to read protocol behavior as logic.
+
+## License
+
+- Code (`src/`, `examples/`): [MIT](LICENSE)
+- Course text (`modules/`, `notes/`, root Markdown files): all rights reserved; free to read and study. See [LICENSE-CONTENT.md](LICENSE-CONTENT.md)
+
+日本語: コード（`src/`、`examples/`）は MIT です。コース本文（`modules/` など）は著作権を留保しており、閲覧と個人学習は自由ですが、再配布・商用利用には許可が必要です。
